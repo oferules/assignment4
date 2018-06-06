@@ -443,3 +443,55 @@ sys_pipe(void)
   fd[1] = fd1;
   return 0;
 }
+
+int
+sys_symlink(void)
+{
+  char *oldpath, *newpath;
+  struct inode *ip;
+  
+  if(argstr(0, &oldpath) < 0 || argstr(1, &newpath) < 0)
+   return -1;
+
+
+  begin_op();
+  
+  /// fail if oldpath doesn't exists or new path exists
+  if(!namei(oldpath) || namei(newpath)){
+    end_op();
+    return -1;
+  }
+
+  if((ip = create(newpath, T_SYMLINK, 0, 0)) == 0){
+    end_op();
+    return -1;
+  }
+
+  writei(ip, oldpath, 0, strlen(oldpath));
+  iunlockput(ip);
+  end_op();
+
+  return 0;
+}
+
+int
+sys_readlink(void)
+{
+  char *pathname, *buf;
+  int bufsize;
+  struct inode *ip;
+  
+  if(argstr(0, &pathname) < 0 || argint(2, &bufsize) || argptr(1, &buf, bufsize) < 0)
+   return -1;
+
+  begin_op();
+  ip = namei(pathname);
+  if(!ip || ip->type != T_SYMLINK || bufsize < strlen(pathname)){
+    end_op();
+    return -1;
+  }
+
+  end_op();
+
+  return 0;
+}
