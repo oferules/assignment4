@@ -25,9 +25,11 @@ int sleep(int);
 int uptime(void);
 int symlink(const char*, const char*);
 int symread(const char*, char*, int);
+int open_no_deref(char*, int);
 
 // ulib.c
 int stat(char*, struct stat*);
+int stat_no_deref(char*, struct stat*);
 char* strcpy(char*, char*);
 void *memmove(void*, void*, int);
 char* strchr(const char*, char c);

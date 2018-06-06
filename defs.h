@@ -52,6 +52,7 @@ struct inode*   nameiparent(char*, char*);
 int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, char*, uint, uint);
+struct inode*   namei_no_deref(char*);
 
 // ide.c
 void            ideinit(void);
@@ -189,6 +190,7 @@ void            clearpteu(pde_t *pgdir, char *uva);
 // sysfile.c
 int 			symlink(const char*, const char*);
 int 			readlink(const char*, char*, int);
+int 			open_no_deref(char*, int);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
