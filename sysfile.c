@@ -507,7 +507,7 @@ sys_symlink(void)
   begin_op();
   
   /// fail if oldpath doesn't exists or new path exists
-  if(!namei(oldpath) || namei(newpath)){
+  if(namei(newpath)){
     end_op();
     return -1;
   }

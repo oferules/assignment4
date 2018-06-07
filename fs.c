@@ -681,8 +681,12 @@ namex(char *path, int nameiparent, char *name, struct inode *head, int depth, in
   struct inode *ip, *next;
   char buf[100], tname[DIRSIZ];
 
-  if(depth > MAX_DEREFERENCE)
+  /// excceded the maximum derefrences (avoid infinite loops)
+  if(depth > MAX_DEREFERENCE){
+    cprintf("symlink excceded maximum derefrences\n");
     return 0;
+  }
+  
   if(*path == '/')
     ip = iget(ROOTDEV, ROOTINO);
   else if(head)
