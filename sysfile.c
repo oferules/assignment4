@@ -561,7 +561,13 @@ sys_ftag(void){
     
     begin_op();
     
+    idup(f->ip);
+    ilock(f->ip);
+    
     int status= add_tag(f->ip, key, value);
+    
+    iunlockput(f->ip);
+    
     end_op();
     
     return status;
@@ -580,7 +586,12 @@ sys_funtag(void){
     
     begin_op();
     
+    idup(f->ip);
+    ilock(f->ip);
+    
     int status= remove_tag(f->ip, key);
+    
+    iunlockput(f->ip);
     
     end_op();
 
@@ -601,7 +612,12 @@ sys_gettag(void){
     
     begin_op();
     
+    idup(f->ip);
+    ilock(f->ip);
+    
     int status= get_tag(f->ip, key, buf);
+    
+    iunlockput(f->ip);
     
     end_op();
 
