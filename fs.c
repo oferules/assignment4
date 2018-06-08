@@ -757,3 +757,27 @@ nameiparent(char *path, char *name)
 {
   return namex(path, 1, name, 0, 0, 1);
 }
+
+
+int             
+add_tag(struct inode* ip, const char* key, const char* value){
+    
+    
+    
+    return 0;
+}
+
+int             
+remove_tag(struct inode* ip, const char* key){
+    
+    return 0;
+}
+
+
+int             
+get_tag(struct inode* ip, const char* key, char* buf){
+    
+    return 0;
+}
+
+

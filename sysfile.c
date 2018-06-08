@@ -548,37 +548,57 @@ sys_readlink(void)
 
 int
 sys_ftag(void){
-    int fd;
+    struct file *f;
     char* key;
     char* value;
     
-    if(argint(0, &fd) < 0 || argstr(1, &key) || argstr(2, &value) < 0)
+    if(argfd(0, 0, &f) < 0 || argstr(1, &key) || argstr(2, &value) < 0)
         return -1;
     
-    return 0;
+    if(f->ip == 0)
+        return -1;
+    
+    int status= add_tag(f->ip, key, value);
+    
+    return status;
 }
 
 int
 sys_funtag(void){
-    int fd;
+    struct file *f;
     char* key;
     
-    if(argint(0, &fd) < 0 || argstr(1, &key))
+    if(argfd(0, 0, &f) < 0 || argstr(1, &key))
         return -1;
     
-    return 0;
+    if(f->ip == 0)
+        return -1;
+    
+    int status= remove_tag(f->ip, key);
+    
+    return status;
 }
 
 int
 sys_gettag(void){
-    int fd;
+    struct file *f;
     char* key;
     char* buf;
     
-    if(argint(0, &fd) < 0 || argstr(1, &key) || argptr(2, &buf, MAX_VALUE_LEN) < 0)
+    if(argfd(0, 0, &f) < 0|| argstr(1, &key) || argptr(2, &buf, MAX_VALUE_LEN) < 0)
         return -1;
     
+    if(f->ip == 0)
+        return -1;
     
-    return 0;
+    int status= get_tag(f->ip, key, buf);
+    
+    return status;
 }
+
+
+
+           
+
+         
 

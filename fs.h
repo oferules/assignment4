@@ -4,7 +4,7 @@
 
 #define ROOTINO 1  // root i-number
 #define BSIZE 512  // block size
-#define PAD_SIZE 15 
+#define PAD_SIZE 14 
 
 // Disk layout:
 // [ boot block | super block | log | inode blocks |
@@ -34,7 +34,8 @@ struct dinode {
   short minor;          // Minor device number (T_DEV only)
   short nlink;          // Number of links to inode in file system
   uint size;            // Size of file (bytes)
-  uint addrs[NDIRECT+2];   // Data block addresses
+  uint addrs[NDIRECT+2];   // Data block addresses (12 direct, 1 single indirect, 1 double indirect)
+  uint tags_addr;          /// address of tags block
   uint padding[PAD_SIZE]; /// padding so dinode is a divider of block size
 };
 

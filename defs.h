@@ -53,6 +53,9 @@ int             readi(struct inode*, char*, uint, uint);
 void            stati(struct inode*, struct stat*);
 int             writei(struct inode*, char*, uint, uint);
 struct inode*   namei_no_deref(char*);
+int             add_tag(struct inode*, const char*, const char*);
+int             remove_tag(struct inode*, const char*);
+int             get_tag(struct inode*, const char*, char*);
 
 // ide.c
 void            ideinit(void);
