@@ -94,10 +94,19 @@ find(char *path)
   struct stat st;
 
   
-  /// try to open current path
-  if((fd = open_no_deref(path, 0)) < 0){
-    printf(2, "find: cannot open %s\n", path);
-    return;
+  /// try to open current path - if followOn deference symlinks
+  if (followOn){
+    if((fd = open(path, 0)) < 0){
+      printf(2, "find: cannot open %s\n", path);
+      return;
+    }
+      
+  }
+  else{
+    if((fd = open_no_deref(path, 0)) < 0){
+        printf(2, "find: cannot open %s\n", path);
+        return;
+    }
   }
 
   /// get status of inode
@@ -128,7 +137,9 @@ find(char *path)
   }
     
   if (print && tagOn){
-    print = 1;
+    char tempvalue[30];
+    int status = gettag(fd, tagKey, tempvalue);
+    print =  ( status == 0 && ( strcmp(tempvalue,"?") == 0 || (strcmp(tempvalue,tagValue) == 0 ) ) );
   }
 
   switch(st.type){

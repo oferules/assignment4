@@ -908,6 +908,7 @@ add_tag(struct inode* ip, const char* key, const char* value){
     
     ip->ntags++;
     
+    iupdate(ip);
     //print_tags(ip);
 
     return 0;
@@ -934,6 +935,7 @@ remove_tag(struct inode* ip, const char* key){
     brelse(bp);
     
     ip->ntags--;
+    iupdate(ip);
     //print_tags(ip);
     return 0;
 }

@@ -93,7 +93,15 @@ main(int argc, char *argv[])
   gettag(fd1, key5, value7);
   printf(1, "get fifth tag value: %s\n",value7);
   
-  
+  // close and open fd and try to get 5 tag
+  printf(1, "close and open fd\n");
   close(fd1);
+  fd1 = open("README", O_RDWR);
+  
+    // get 5 tag
+  char value8[30];
+  gettag(fd1, key5, value8);
+  printf(1, "get fifth tag value: %s\n",value8);
+  
   exit();
 }
