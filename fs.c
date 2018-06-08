@@ -232,6 +232,7 @@ iupdate(struct inode *ip)
   dip->nlink = ip->nlink;
   dip->size = ip->size;
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
+  dip->tags_addr = ip->tags_addr;
   log_write(bp);
   brelse(bp);
 }
@@ -305,6 +306,7 @@ ilock(struct inode *ip)
     ip->nlink = dip->nlink;
     ip->size = dip->size;
     memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
+    ip->tags_addr = dip->tags_addr;
     brelse(bp);
     ip->valid = 1;
     if(ip->type == 0)
@@ -450,6 +452,7 @@ itrunc(struct inode *ip)
     }
   }
 
+  /// free all single indirect blocks
   if(ip->addrs[NDIRECT]){
     bp = bread(ip->dev, ip->addrs[NDIRECT]);
     a = (uint*)bp->data;
@@ -462,6 +465,7 @@ itrunc(struct inode *ip)
     ip->addrs[NDIRECT] = 0;
   }
 
+  /// free all double indirect blocks
   if(ip->addrs[NDIRECT + 1]){
     bp = bread(ip->dev, ip->addrs[NDIRECT + 1]);
     startOfDoubleIndirect = (uint*)bp->data;
@@ -483,7 +487,13 @@ itrunc(struct inode *ip)
     bfree(ip->dev, ip->addrs[NDIRECT + 1]);
     ip->addrs[NDIRECT + 1] = 0;
   }
-
+  
+  /// free tags block
+  if (ip->tags_addr != 0){
+    bfree(ip->dev, ip->tags_addr);
+    ip->tags_addr=0;
+  }
+  
   ip->size = 0;
   iupdate(ip);
 }
