@@ -9,6 +9,26 @@ char *root_path, *name, tagKey[10], tagValue[30];
 char type;
 int size;
 
+void concatenate(char p[], char q[]) {
+   int c, d;
+ 
+   c = 0;
+ 
+   while (p[c] != '\0') {
+      c++;      
+   }
+ 
+   d = 0;
+ 
+   while (q[d] != '\0') {
+      p[c] = q[d];
+      d++;
+      c++;    
+   }
+ 
+   p[c] = '\0';
+}
+
 void 
 parseTag(const char* arg, char *tagKey, char *tagValue){
     int i=0;
@@ -68,16 +88,19 @@ fmtname(char *path, char* curname)
 void
 find(char *path)
 {
-  //char buf[512], *p;
+  char buf[512], *p;
   int fd;
-  //struct dirent de;
+  struct dirent de;
   struct stat st;
 
+  
+  /// try to open current path
   if((fd = open_no_deref(path, 0)) < 0){
     printf(2, "find: cannot open %s\n", path);
     return;
   }
 
+  /// get status of inode
   if(fstat(fd, &st) < 0){
     printf(2, "find: cannot stat %s\n", path);
     close(fd);
@@ -86,64 +109,89 @@ find(char *path)
 
   char file_name[100];
   
+  /// get name
   fmtname(path, file_name);
-  int print = 1;
   
+  /// according to parameters check if there is a need to print this fd
+  int print = 1;
+  if (print && nameOn){
+    print = ( strcmp(file_name, name) == 0 );
+  }
+    
+  if (print && sizeOn){
+    if (moreThen)
+      print = (st.size > size);
+    else if(lessThen)
+      print = (st.size < size);
+    else
+      print = (st.size == size);
+  }
+    
+  if (print && tagOn){
+    print = 1;
+  }
+
   switch(st.type){
+  /// if a file only check type
   case T_FILE:
-    if (nameOn){
-        print = ( strcmp(file_name, name) == 0 );
-    }
-    
-    if (sizeOn){
-        if (moreThen)
-            print = (st.size > size);
-        else if(lessThen)
-            print = (st.size < size);
-        else
-            print = (st.size == size);
-    }
-    
-    if (typeOn){
+    if (print && typeOn){
         print = (type == 'f');
     }
-    
-    if (tagOn){
-        print = 1;
-    }
-    
-    if(print){
-        printf(1, "%s\n", path);
-    }
     break;
-      
+  
+  /// if a symlink ??
   case T_SYMLINK:
-
+    if (print && typeOn){
+        print = (type == 's');
+    }
     break;
 
+  /// if directory check type and enter find recursively on all childs
   case T_DIR:
-    /*
+    if (print && typeOn){
+        print = (type == 'd');
+    }
+    
     if(strlen(path) + 1 + DIRSIZ + 1 > sizeof buf){
-      printf(1, "ls: path too long\n");
+      printf(1, "find: path too long\n");
       break;
     }
     strcpy(buf, path);
     p = buf+strlen(buf);
     *p++ = '/';
+    
+    char concatenatePath[100];
+    memmove(concatenatePath, path, strlen(path));
+    /// loop on all childs
     while(read(fd, &de, sizeof(de)) == sizeof(de)){
       if(de.inum == 0)
         continue;
+      
+      concatenatePath[strlen(path)]=0;
       memmove(p, de.name, DIRSIZ);
       p[DIRSIZ] = 0;
-      if(stat_no_deref(buf, &st) < 0){
-        printf(1, "ls: cannot stat %s\n", buf);
-        continue;
+      
+      
+      
+      /// enter recursive only if not cur dir or parent dir
+      if (strcmp(p,".")!= 0 && strcmp(p,"..")!=0 ){
+          if ( strcmp(path, "/") != 0 )
+            concatenate(concatenatePath, "/");
+          concatenate(concatenatePath, p);
+          
+          if (strcmp(p,"a")== 0){
+              printf(1, "a path : %s\n",p);
+          }
+          find(concatenatePath);
       }
-      printf(1, "%s %d %d %d\n", fmtname(buf), st.type, st.ino, st.size);
     }
-    */
     break;
   }
+  
+  if(print){
+    printf(1, "%s\n", path);
+  }
+  
   close(fd);
 }
 
