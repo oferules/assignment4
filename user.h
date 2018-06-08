@@ -26,6 +26,9 @@ int uptime(void);
 int symlink(const char*, const char*);
 int symread(const char*, char*, int);
 int open_no_deref(char*, int);
+int ftag(int, const char*, const char*);
+int funtag(int, const char*);
+int gettag(int, const char*,char*);
 
 // ulib.c
 int stat(char*, struct stat*);

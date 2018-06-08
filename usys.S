@@ -32,3 +32,9 @@ SYSCALL(uptime)
 SYSCALL(symlink)
 SYSCALL(readlink)
 SYSCALL(open_no_deref)
+SYSCALL(ftag)
+SYSCALL(funtag)
+SYSCALL(gettag)
+
+
+

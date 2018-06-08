@@ -187,10 +187,7 @@ void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 
-// sysfile.c
-int 			symlink(const char*, const char*);
-int 			readlink(const char*, char*, int);
-int 			open_no_deref(char*, int);
+
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

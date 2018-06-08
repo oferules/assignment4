@@ -23,3 +23,6 @@
 #define SYS_symlink  	22
 #define SYS_readlink  	23
 #define SYS_open_no_deref 24
+#define SYS_ftag    25
+#define SYS_funtag  26
+#define SYS_gettag  27

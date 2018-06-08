@@ -545,3 +545,40 @@ sys_readlink(void)
 
   return 0;
 }
+
+int
+sys_ftag(void){
+    int fd;
+    char* key;
+    char* value;
+    
+    if(argint(0, &fd) < 0 || argstr(1, &key) || argstr(2, &value) < 0)
+        return -1;
+    
+    return 0;
+}
+
+int
+sys_funtag(void){
+    int fd;
+    char* key;
+    
+    if(argint(0, &fd) < 0 || argstr(1, &key))
+        return -1;
+    
+    return 0;
+}
+
+int
+sys_gettag(void){
+    int fd;
+    char* key;
+    char* buf;
+    
+    if(argint(0, &fd) < 0 || argstr(1, &key) || argptr(2, &buf, MAX_VALUE_LEN) < 0)
+        return -1;
+    
+    
+    return 0;
+}
+

@@ -12,3 +12,5 @@
 #define NBUF         (MAXOPBLOCKS*3)  // size of disk block cache
 #define FSSIZE       32768  // size of file system in blocks
 #define MAX_DEREFERENCE 31
+#define MAX_KEY_LEN  10
+#define MAX_VALUE_LEN  30
