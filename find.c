@@ -139,7 +139,7 @@ find(char *path)
   if (print && tagOn){
     char tempvalue[30];
     int status = gettag(fd, tagKey, tempvalue);
-    print =  ( status == 0 && ( strcmp(tempvalue,"?") == 0 || (strcmp(tempvalue,tagValue) == 0 ) ) );
+    print =  ( status == 0 && ( strcmp(tagValue,"?") == 0 || (strcmp(tempvalue,tagValue) == 0 ) ) );
   }
 
   switch(st.type){
