@@ -24,6 +24,7 @@ struct inode {
   uint size;
   uint addrs[NDIRECT+2]; /// added one for double indirect
   uint tags_addr;         /// address of tags block
+  int ntags;              /// number of tags
 };
 
 // table mapping major device number to

@@ -552,13 +552,17 @@ sys_ftag(void){
     char* key;
     char* value;
     
-    if(argfd(0, 0, &f) < 0 || argstr(1, &key) || argstr(2, &value) < 0)
+    if(argfd(0, 0, &f) < 0 || argstr(1, &key) < 0 || argstr(2, &value) < 0){
         return -1;
-    
+    }
+            
     if(f->ip == 0)
         return -1;
     
+    begin_op();
+    
     int status= add_tag(f->ip, key, value);
+    end_op();
     
     return status;
 }
@@ -568,14 +572,18 @@ sys_funtag(void){
     struct file *f;
     char* key;
     
-    if(argfd(0, 0, &f) < 0 || argstr(1, &key))
+    if(argfd(0, 0, &f) < 0 || argstr(1, &key) < 0)
         return -1;
     
     if(f->ip == 0)
         return -1;
     
+    begin_op();
+    
     int status= remove_tag(f->ip, key);
     
+    end_op();
+
     return status;
 }
 
@@ -585,14 +593,18 @@ sys_gettag(void){
     char* key;
     char* buf;
     
-    if(argfd(0, 0, &f) < 0|| argstr(1, &key) || argptr(2, &buf, MAX_VALUE_LEN) < 0)
+    if(argfd(0, 0, &f) < 0|| argstr(1, &key) < 0 || argptr(2, &buf, MAX_VALUE_LEN) < 0)
         return -1;
     
     if(f->ip == 0)
         return -1;
     
+    begin_op();
+    
     int status= get_tag(f->ip, key, buf);
     
+    end_op();
+
     return status;
 }
 

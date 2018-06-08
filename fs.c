@@ -233,6 +233,7 @@ iupdate(struct inode *ip)
   dip->size = ip->size;
   memmove(dip->addrs, ip->addrs, sizeof(ip->addrs));
   dip->tags_addr = ip->tags_addr;
+  dip->ntags = ip->ntags;
   log_write(bp);
   brelse(bp);
 }
@@ -307,6 +308,7 @@ ilock(struct inode *ip)
     ip->size = dip->size;
     memmove(ip->addrs, dip->addrs, sizeof(ip->addrs));
     ip->tags_addr = dip->tags_addr;
+    ip->ntags = dip->ntags;
     brelse(bp);
     ip->valid = 1;
     if(ip->type == 0)
@@ -345,6 +347,7 @@ iput(struct inode *ip)
       ip->type = 0;
       iupdate(ip);
       ip->valid = 0;
+      ip->ntags = 0;   
     }
   }
   releasesleep(&ip->lock);
@@ -769,23 +772,195 @@ nameiparent(char *path, char *name)
 }
 
 
+int
+find_offset_of_key(char* data, const char* key, int ntags){
+    int i=0;
+    while(ntags>0){
+        if (strncmp(data+i, key, strlen(key)) == 0){
+            return i;
+        }
+        /// skip key
+        i=i+strlen(data+i)+1;
+        ///skip value
+        i=i+strlen(data+i)+1;
+        ntags--;
+    }
+    return -1;
+}
+
+
+int
+get_offset_of_tag(char* data, uint tag_index){
+    
+    if (tag_index == 0)
+        return 0;
+    
+    int i=0;
+    uint zerosToCollect = tag_index * 2;
+    
+    for(i=0 ; i< BSIZE; i++){
+        if (data[i]=='\0')
+            zerosToCollect--;
+        if (zerosToCollect == 0)
+            break;
+    }
+    
+    if (i >= BSIZE)
+        return -1;
+    
+    return i+1;
+    
+}
+
+void
+move_back_keys(char* data, int key_offset){
+    /// get value offset
+    int value_offset=key_offset+strlen(data+key_offset)+1;
+    
+    /// get end of value offset (start of next key)
+    int next_key_offset=value_offset+strlen(data+value_offset)+1;
+    memmove(data+key_offset, data + next_key_offset, BSIZE - (next_key_offset));
+}
+
+void
+create_tag(const char* key, const char* value, char* tag){
+    int key_len= strlen(key);
+    int value_len= strlen(value);
+    
+    char* iter = tag;
+    
+    /// copy key
+    memmove(iter, key , key_len);
+    iter=iter+key_len;
+    
+    /// ending \0 of key
+    memmove(iter, "\0" , 1);
+    iter=iter+1;
+    
+    /// copy value
+    memmove(iter, value , value_len);
+    iter=iter+value_len;
+    
+    /// ending \0 of value
+    memmove(iter, "\0" , 1);
+}
+
+void
+print_tags(struct inode* ip){
+    struct buf *bp;
+    bp = bread(ip->dev, ip->tags_addr);
+
+    char* data= (char*)bp->data;
+    int ntags=ip->ntags;
+    int i=0;
+    
+    cprintf("\n====== inode %d tags ======\n", ip->inum);
+    while(ntags>0){
+        cprintf("key: %s, ",data+i);
+        /// skip key
+        i=i+strlen(data+i)+1;
+        cprintf("value: %s\n",data+i);
+        ///skip value
+        i=i+strlen(data+i)+1;
+        ntags--;
+    }
+    
+    cprintf("====== end tags ======\n\n");
+    brelse(bp);
+}
+
+
 int             
 add_tag(struct inode* ip, const char* key, const char* value){
     
+    /// allocate new block if not exists
+    if (ip->tags_addr == 0){
+        ip->tags_addr = balloc (ip->dev);
+    }
     
+    /// get the block into buffer
+    struct buf *bp;
+    bp = bread(ip->dev, ip->tags_addr);
     
+    char* data=(char*) bp->data;
+    
+    /// check if key already exist, if it is- remove it
+    int key_offset = find_offset_of_key(data, key, ip->ntags);
+    if (key_offset != -1){
+        move_back_keys(data, key_offset);
+        ip->ntags--;
+    }
+        
+    /// get offset for the new tag
+    int new_tag_offset= get_offset_of_tag(data, ip->ntags);
+    
+    if(new_tag_offset == -1)
+        return -1;
+    
+    int tag_size= strlen(key) + strlen(value) + 2;
+    char tag[tag_size];
+    
+    create_tag(key, value, tag);
+    
+    memmove(data + new_tag_offset, tag, tag_size);
+    
+    brelse(bp);
+    
+    ip->ntags++;
+    
+    //print_tags(ip);
+
     return 0;
 }
 
 int             
 remove_tag(struct inode* ip, const char* key){
+    if (ip->tags_addr == 0){
+        return -1;
+    }
+    /// get the block into buffer
+    struct buf *bp;
+    bp = bread(ip->dev, ip->tags_addr);
+    char* data=(char*)bp->data;
     
+    /// find offset of key (if exists)
+    int key_offset= find_offset_of_key(data, key, ip->ntags);
+    
+    if(key_offset==-1)
+        return -1;
+   
+    move_back_keys(data, key_offset);
+    
+    brelse(bp);
+    
+    ip->ntags--;
+    //print_tags(ip);
     return 0;
 }
 
 
 int             
 get_tag(struct inode* ip, const char* key, char* buf){
+    if (ip->tags_addr == 0){
+        return -1;
+    }
+    
+    /// get the block into buffer
+    struct buf *bp;
+    bp = bread(ip->dev, ip->tags_addr);
+    char* data=(char*)bp->data;
+    
+    /// find offset of key (if exists)
+    int key_offset= find_offset_of_key(data, key, ip->ntags);
+    
+    if(key_offset==-1)
+        return -1;
+    
+    /// get value offset and copy the value to buf
+    int valueoffset=key_offset+strlen(data+key_offset)+1;
+    memmove(buf, data+valueoffset, strlen(data+valueoffset));
+    
+    brelse(bp);
     
     return 0;
 }
