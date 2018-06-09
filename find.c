@@ -190,9 +190,6 @@ find(char *path)
             concatenate(concatenatePath, "/");
           concatenate(concatenatePath, p);
           
-          if (strcmp(p,"a")== 0){
-              printf(1, "a path : %s\n",p);
-          }
           find(concatenatePath);
       }
     }

@@ -9,9 +9,14 @@
 #define O_CREATE 0x200
 #define O_RDWR 0x002
 
+
 int
 main(int argc, char *argv[])
 {
+  char buf[30];
+  buf[0]='\0';
+    readlink("aa", buf , 30 );
+    printf(1, "path is: %s\n", buf);
 
   int fd1 = open("README", O_RDWR);
   const char * key1="key1";

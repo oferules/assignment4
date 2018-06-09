@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+typedef uint size_t;
 
 // system calls
 int fork(void);
@@ -24,7 +25,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int symlink(const char*, const char*);
-int symread(const char*, char*, int);
+int readlink(const char*, char*, size_t);
 int open_no_deref(char*, int);
 int ftag(int, const char*, const char*);
 int funtag(int, const char*);

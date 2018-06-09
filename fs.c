@@ -903,7 +903,7 @@ add_tag(struct inode* ip, const char* key, const char* value){
     create_tag(key, value, tag);
     
     memmove(data + new_tag_offset, tag, tag_size);
-    
+    log_write(bp);
     brelse(bp);
     
     ip->ntags++;
@@ -931,7 +931,7 @@ remove_tag(struct inode* ip, const char* key){
         return -1;
    
     move_back_keys(data, key_offset);
-    
+    log_write(bp);
     brelse(bp);
     
     ip->ntags--;

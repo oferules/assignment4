@@ -527,25 +527,54 @@ sys_symlink(void)
 }
 
 int
-sys_readlink(void)
-{
-  char *pathname, *buf;
-  size_t bufsize;
-  struct inode *ip;
-  
-  if(argstr(0, &pathname) < 0 || argint(2, (int*) &bufsize) || argptr(1, &buf, (int)bufsize) < 0)
-   return -1;
+sys_readlink(void) {
+    char name[DIRSIZ];
+    char *pathname, *buf;
+    size_t bufsize;
+    struct inode *ip, *next;
 
-  begin_op();
-  ip = namei(pathname);
-  if(!ip || ip->type != T_SYMLINK || bufsize < strlen(pathname)){
+    if (argstr(0, &pathname) < 0 || argint(2, (int*) &bufsize) || argptr(1, (void*)&buf, bufsize) < 0 )
+        return -1;
+
+    begin_op();
+
+    if((ip = nameiparent(pathname,name)) == 0){
+        end_op();
+        return -1;
+    }
+
+    ilock(ip);
+    if((next = dirlookup(ip, name, 0)) == 0){
+        iunlockput(ip);
+        end_op();
+        return -1;
+    }
+    iunlockput(ip);
+    ip=next;
+
+    ilock(ip);
+    if (ip->type != T_SYMLINK) {
+        iunlockput(ip);
+        end_op();
+        return -1;
+    }
+
+    if(ip->size > bufsize){
+        iunlockput(ip);
+        end_op();
+        return -1;
+    }
+
+    if(readi(ip, buf, 0, ip->size) != ip->size ) {
+      iunlockput(ip);
+      end_op();
+      return -1;
+    }
+    iunlockput(ip);
+
     end_op();
-    return -1;
-  }
 
-  end_op();
-
-  return 0;
+    return 0;
 }
 
 int
