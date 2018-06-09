@@ -16,6 +16,8 @@
 #include "file.h"
 #include "fcntl.h"
 
+typedef uint size_t;
+
 // Fetch the nth word-sized system call argument as a file descriptor
 // and return both the descriptor and the corresponding struct file.
 static int
@@ -528,10 +530,10 @@ int
 sys_readlink(void)
 {
   char *pathname, *buf;
-  int bufsize;
+  size_t bufsize;
   struct inode *ip;
   
-  if(argstr(0, &pathname) < 0 || argint(2, &bufsize) || argptr(1, &buf, bufsize) < 0)
+  if(argstr(0, &pathname) < 0 || argint(2, (int*) &bufsize) || argptr(1, &buf, (int)bufsize) < 0)
    return -1;
 
   begin_op();
